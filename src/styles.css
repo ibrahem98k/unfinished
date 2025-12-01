@@ -1,0 +1,84 @@
+:root{
+  --bg: #0f1724;
+  --card: #0b1220;
+  --muted: #9aa4b2;
+  --accent: #7c5cff;
+  --danger: #f43f5e;
+  --glass: rgba(255,255,255,0.03);
+}
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071025,#0d1117);color:#dbe7ff;margin:0}
+
+.app{min-height:100%;display:flex;flex-direction:column}
+.app-header{padding:28px 32px;border-bottom:1px solid rgba(255,255,255,0.03);background:linear-gradient(90deg,rgba(124,92,255,0.08),transparent)}
+.app-header h1{margin:0;font-size:22px}
+.subtitle{color:var(--muted);margin-top:6px;font-size:13px}
+
+.container{flex:1;padding:28px 32px}
+.user-list .controls{display:flex;gap:12px;margin-bottom:12px}
+.btn{background:transparent;border:1px solid rgba(255,255,255,0.07);color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--accent),#00c2ff);border:none;color:white}
+.btn.danger{background:linear-gradient(90deg,#ff7c7c,#ff3b5e);border:none;color:white}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.card{background:var(--card);padding:12px;border-radius:12px;display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,255,255,0.03)}
+.avatar-wrap{height:100px;display:flex;align-items:center;justify-content:center;background:var(--glass);border-radius:8px;padding:6px}
+.avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.05)}
+.meta h3{margin:0;font-size:16px}
+.meta .sub{color:var(--muted);font-size:13px}
+.meta .id{color:rgba(255,255,255,0.06);font-size:11px;margin-top:6px}
+.actions{display:flex;gap:8px;align-self:flex-end}
+
+.info{padding:10px;color:var(--muted);background:rgba(255,255,255,0.02);border-radius:8px}
+.error{padding:10px;color:var(--danger);background:rgba(244,63,94,0.06);border-radius:8px}
+
+.modal{position:fixed;inset:0;background:linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55));display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-inner{width:860px;max-width:100%;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);position:relative}
+.close{position:absolute;right:12px;top:8px;border-radius:50%;width:36px;height:36px;font-size:18px}
+
+.user-form{display:flex;flex-direction:column;gap:12px}
+.user-form label{display:flex;flex-direction:column;font-size:13px}
+.user-form input{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
+
+.footer{padding:12px 32px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,0.02)}
+
+@media (max-width:540px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+  .modal-inner{width:95%}
+}
+
+/* table/spreadsheet styles */
+.table-wrap{overflow:auto;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+.users-table{width:100%;border-collapse:collapse;background:transparent;color:inherit}
+.users-table thead th{position:sticky;top:0;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));backdrop-filter:blur(3px);text-align:left;padding:8px 10px;font-size:12px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.02)}
+.users-table tbody td{padding:10px;border-bottom:1px dashed rgba(255,255,255,0.02);vertical-align:middle}
+.users-table .avatar{width:40px;height:40px;border-radius:6px}
+.users-table .col-avatar{width:72px}
+.users-table .col-name{min-width:180px;font-weight:600}
+.users-table .col-id{width:72px;color:rgba(255,255,255,0.06)}
+.id-badge-wrap{display:flex;align-items:center;gap:8px}
+.id-badge{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);font-weight:700;color:#e7f0ff}
+.id-copy-btn{background:transparent;border-radius:6px;border:1px solid rgba(255,255,255,0.04);padding:6px 6px;cursor:pointer;color:var(--muted);font-size:12px}
+.id-copy-btn:hover{color:white;border-color:rgba(255,255,255,0.07);background:linear-gradient(90deg,rgba(255,255,255,0.01),transparent)}
+.id-copy-btn:active{transform:translateY(1px)}
+.id-copy-btn[title]{min-width:60px;text-align:center}
+.id-badge-wrap .id-copy-btn{align-self:flex-start}
+.users-table .col-created{min-width:170px;color:var(--muted)}
+.users-table .col-actions{width:180px;text-align:right}
+.users-table tbody tr:hover{background:linear-gradient(90deg,rgba(255,255,255,0.01),transparent);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.01);}
+.users-table tbody tr:focus{outline:2px solid rgba(124,92,255,0.16);}
+
+/* make actions smaller in table */
+.users-table .actions .btn{padding:6px 8px;font-size:13px}
+
+@media (max-width:740px){
+  .users-table thead th{font-size:11px}
+  .users-table .col-created{font-size:12px}
+}
+
+/* inputs inside the table should be subtle and full-width */
+.users-table input{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit}
+.users-table input::placeholder{color:rgba(255,255,255,0.25)}
+.users-table .col-avatar input{padding:6px;font-size:13px}
