@@ -1,6 +1,7 @@
 import React from 'react'
 import UserList from './components/UserList'
 
+// App root component — renders the header, main user list and footer
 export default function App(){
   return (
     <div className="app">

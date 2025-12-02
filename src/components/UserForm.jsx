@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react'
 
+// UserForm component
+// - Handles both creating a new user and editing an existing one
+// - Props:
+//    `user` (object|null) pre-filled when editing
+//    `onSave` (fn) called with payload when the form is submitted
+//    `onCancel` (fn) called when the user cancels the modal
 export default function UserForm({ user = null, onSave, onCancel }){
   const [name, setName] = useState(user?.name || '')
   const [email, setEmail] = useState(user?.email || '')
@@ -31,25 +37,57 @@ export default function UserForm({ user = null, onSave, onCancel }){
   return (
     <form className="user-form" onSubmit={handleSubmit}>
       <h2>{user ? 'Edit User' : 'Add New User'}</h2>
-      {user?.id && <div className="editing-info">Currently editing ID: {user.id}</div>}
+      {user?.id && (
+        <div className="editing-info">Currently editing ID: {user.id}</div>
+      )}
+
       <label>
         Name
-        <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" required />
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Full name"
+          required
+        />
       </label>
 
       <label>
         Email
-        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" required />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="name@example.com"
+          required
+        />
       </label>
 
       <label>
         Avatar URL
-        <input value={avatar} onChange={e => setAvatar(e.target.value)} placeholder="https://... (optional)" />
+        <input
+          value={avatar}
+          onChange={(e) => setAvatar(e.target.value)}
+          placeholder="https://... (optional)"
+        />
       </label>
 
       <div className="form-actions">
-        <button className="btn" type="button" onClick={onCancel} disabled={saving}>Cancel</button>
-        <button className="btn primary" type="submit" disabled={saving}>{saving ? 'Saving…' : (user ? 'Update' : 'Create')}</button>
+        <button
+          className="btn"
+          type="button"
+          onClick={onCancel}
+          disabled={saving}
+        >
+          Cancel
+        </button>
+
+        <button
+          className="btn primary"
+          type="submit"
+          disabled={saving}
+        >
+          {saving ? 'Saving…' : user ? 'Update' : 'Create'}
+        </button>
       </div>
     </form>
   )
