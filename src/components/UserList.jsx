@@ -11,6 +11,8 @@ export default function UserList(){
   const [editing, setEditing] = useState(null) // used for modal editing
   const [showForm, setShowForm] = useState(false)
 
+  const [search, setSearch] = useState('')
+
   // Inline-edit state for table rows (spreadsheet-like)
   const [inlineId, setInlineId] = useState(null)
   const [inlineData, setInlineData] = useState({ name: '', avatar: '' })
@@ -19,6 +21,12 @@ export default function UserList(){
   useEffect(() => {
     fetchUsers()
   }, [])
+
+  // derived filtered list based on search query
+  const filteredUsers = users.filter(u => {
+    if(!search) return true
+    return (u.name || '').toLowerCase().includes(search.toLowerCase())
+  })
 
   async function fetchUsers(){
     setLoading(true)
@@ -47,11 +55,9 @@ export default function UserList(){
   }
 
   function handleEdit(user){
-    // start inline edit on click
-    setInlineId(user.id)
-    setInlineData({ name: user.name || '', avatar: user.avatar || '' })
-    // also keep editing for modal if ever needed
+    // Open modal for editing (clear inline edit behavior when using modal)
     setEditing(user)
+    setShowForm(true)
   }
 
   function handleAdd(){
@@ -73,7 +79,9 @@ export default function UserList(){
       const saved = await res.json()
       if(method === 'POST') setUsers(prev => [saved, ...prev])
       else setUsers(prev => prev.map(u => u.id === saved.id ? saved : u))
+      // Close modal and clear editing state after successful save
       setShowForm(false)
+      setEditing(null)
     }catch(err){
       alert('Save failed: ' + err.message)
     }
@@ -107,6 +115,19 @@ export default function UserList(){
 
   return (
     <div className="user-list">
+      <div className="search-centered">
+        <div className="search-wrap">
+          <input
+            className="search-input"
+            placeholder="Search users by name…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            aria-label="Search users by name"
+          />
+          {search && <button className="btn" onClick={() => setSearch('')}>Clear</button>}
+        </div>
+      </div>
+
       <div className="controls">
         <button className="btn primary" onClick={handleAdd}>+ Add user</button>
         <button className="btn" onClick={fetchUsers}>Refresh</button>
@@ -116,6 +137,7 @@ export default function UserList(){
       {error && <div className="error">{error}</div>}
 
       {!loading && users.length === 0 && <div className="info">No users found — try adding one.</div>}
+      {!loading && users.length > 0 && filteredUsers.length === 0 && <div className="info">No users match "{search}".</div>}
 
       <div className="table-wrap">
         <table className="users-table" role="grid">
@@ -129,7 +151,7 @@ export default function UserList(){
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <tr key={user.id} className="row" tabIndex={0}>
                 <td className="col-id">
                   <div className="id-badge-wrap">
@@ -161,7 +183,7 @@ export default function UserList(){
                       </>
                     ) : (
                       <>
-                        <button className="btn" onClick={() => handleEdit(user)}>Edit</button>
+                        <button className="btn edit" onClick={() => handleEdit(user)}>Edit</button>
                         <button className="btn danger" onClick={() => handleDelete(user.id)}>Delete</button>
                       </>
                     )}
@@ -176,8 +198,8 @@ export default function UserList(){
       {showForm && (
         <div className="modal">
           <div className="modal-inner">
-            <button className="close" onClick={() => setShowForm(false)}>×</button>
-            <UserForm user={editing} onCancel={() => setShowForm(false)} onSave={upsertUser} />
+            <button className="close" onClick={() => { setShowForm(false); setEditing(null); }}>×</button>
+            <UserForm user={editing} onCancel={() => { setShowForm(false); setEditing(null); }} onSave={upsertUser} />
           </div>
         </div>
       )}

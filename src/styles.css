@@ -11,15 +11,26 @@ html,body,#root{height:100%}
 body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071025,#0d1117);color:#dbe7ff;margin:0}
 
 .app{min-height:100%;display:flex;flex-direction:column}
-.app-header{padding:28px 32px;border-bottom:1px solid rgba(255,255,255,0.03);background:linear-gradient(90deg,rgba(124,92,255,0.08),transparent)}
-.app-header h1{margin:0;font-size:22px}
-.subtitle{color:var(--muted);margin-top:6px;font-size:13px}
+.app-header{padding:36px 20px;border-bottom:1px solid rgba(255,255,255,0.04);background:linear-gradient(90deg,rgba(124,92,255,0.06),transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
+.app-header h1{margin:0;font-size:28px;letter-spacing:0.6px;font-weight:700;color: #eef6ff;max-width:1100px}
+.app-header::after{content:"";width:80px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--accent),#00c2ff);display:block;margin-top:12px}
+.subtitle{display:none}
 
 .container{flex:1;padding:28px 32px}
 .user-list .controls{display:flex;gap:12px;margin-bottom:12px}
+.search-centered{display:flex;justify-content:center;margin:8px 0}
+.search-wrap{display:flex;gap:8px;align-items:center}
+.search-input{padding:12px 18px;border-radius:12px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.02);color:inherit;min-width:420px;max-width:760px;width:48%}
+.search-input::placeholder{color:rgba(255,255,255,0.35)}
+.search-input:focus{outline:none;box-shadow:0 0 0 10px rgba(124,92,255,0.10);border-color:rgba(124,92,255,0.22)}
 .btn{background:transparent;border:1px solid rgba(255,255,255,0.07);color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer}
 .btn.primary{background:linear-gradient(90deg,var(--accent),#00c2ff);border:none;color:white}
 .btn.danger{background:linear-gradient(90deg,#ff7c7c,#ff3b5e);border:none;color:white}
+
+/* Edit button - clearly visible, subtle accent and strong hover */
+.btn.edit{background:linear-gradient(90deg, rgba(124,92,255,0.06), rgba(124,92,255,0.02));border:1px solid rgba(124,92,255,0.20);color:var(--accent);padding:8px 12px}
+.btn.edit:hover{background:linear-gradient(90deg,var(--accent), #7a4cff);color:#fff;border-color:rgba(124,92,255,0.36);box-shadow:0 8px 28px rgba(124,92,255,0.12);transform:translateY(-1px)}
+.btn.edit:active{transform:translateY(0)}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 .card{background:var(--card);padding:12px;border-radius:12px;display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,255,255,0.03)}
@@ -33,13 +44,45 @@ body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradien
 .info{padding:10px;color:var(--muted);background:rgba(255,255,255,0.02);border-radius:8px}
 .error{padding:10px;color:var(--danger);background:rgba(244,63,94,0.06);border-radius:8px}
 
-.modal{position:fixed;inset:0;background:linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55));display:flex;align-items:center;justify-content:center;padding:20px}
-.modal-inner{width:860px;max-width:100%;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);position:relative}
-.close{position:absolute;right:12px;top:8px;border-radius:50%;width:36px;height:36px;font-size:18px}
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;
+  /* very strong overlay; use both solid color and blur for maximum obscuring */
+  background:rgba(2,6,23,0.92);
+  backdrop-filter:blur(12px) saturate(1.08);
+  -webkit-backdrop-filter:blur(12px) saturate(1.08);
+  z-index:99999;
+}
+
+/* Fallback dark layer for browsers without backdrop-filter support */
+.modal::before{content:"";position:absolute;inset:0;background:rgba(2,6,23,0.78);pointer-events:none;border-radius:0}
+
+.modal-inner{width:900px;max-width:100%;
+  /* nearly solid card background so content behind is fully obscured */
+  background:rgba(10,14,22,0.995);
+  padding:22px;border-radius:14px;position:relative;
+  /* stronger border and a bright accent left stripe for visibility */
+  border:1px solid rgba(255,255,255,0.08);
+  border-left:10px solid var(--accent);
+  box-shadow: inset 8px 0 22px rgba(124,92,255,0.06), 0 30px 80px rgba(2,6,23,0.9);
+  transform:translateY(0);transition:transform .12s ease,opacity .12s ease;
+  padding-left:22px; /* keep content away from left accent */
+  z-index:100000; /* sit above overlay pseudo-element */
+  animation:modal-pop .14s cubic-bezier(.2,.9,.2,1);
+}
+
+@keyframes modal-pop{from{opacity:0;transform:translateY(8px) scale(.995)}to{opacity:1;transform:translateY(0) scale(1)}}
+.close{position:absolute;right:12px;top:8px;border-radius:50%;width:36px;height:36px;font-size:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.close:hover{background:linear-gradient(90deg,rgba(124,92,255,0.18),rgba(255,255,255,0.04));color:white;border-color:rgba(124,92,255,0.28);transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,92,255,0.08)}
+.editing-info{font-size:12px;color:var(--muted);background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);display:inline-block;margin-bottom:6px}
+
+/* Slightly stronger input borders inside modal for clarity */
+.user-form input{border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.02)}
+.user-form input:focus{outline:none;box-shadow:0 0 0 6px rgba(124,92,255,0.10);border-color:rgba(124,92,255,0.26)}
+
+.editing-info{font-size:12px;color:var(--muted);background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);display:inline-block;margin-bottom:6px}
 
 .user-form{display:flex;flex-direction:column;gap:12px}
 .user-form label{display:flex;flex-direction:column;font-size:13px}
-.user-form input{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+.user-form input{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:inherit}
 .form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
 
 .footer{padding:12px 32px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,0.02)}

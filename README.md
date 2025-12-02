@@ -1,3 +1,19 @@
+# User Management App
+
+Small React + Vite demo app for basic CRUD operations against mockapi.io.
+
+- Tech: React, Vite
+- How to run:
+
+```powershell
+cd unfinished
+npm install
+npm run dev
+```
+
+This repository contains a simple user list, add/edit modal, and inline editing features used for demonstration and local development.
+
+Keywords: React, Vite, user-management
 # Simple React User Management
 
 This is a minimal React (JavaScript) app that connects to the provided mock API:
