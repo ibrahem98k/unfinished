@@ -75,219 +75,134 @@ export default function UserList(){
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      import React, { useEffect, useState } from 'react'
-      import UserForm from './UserForm'
+      if(!res.ok) throw new Error('Save failed')
+      const saved = await res.json()
+      if(method === 'POST') setUsers(prev => [saved, ...prev])
+      else setUsers(prev => prev.map(u => u.id === saved.id ? saved : u))
+      // Close modal and clear editing state after successful save
+      setShowForm(false)
+      setEditing(null)
+    }catch(err){
+      alert('Save failed: ' + err.message)
+    }
+  }
 
-      // API endpoint for demo users
-      const API = 'https://68a04cea6e38a02c58184c4b.mockapi.io/users'
+  // Save inline - wrapper that calls upsertUser and clears inline state
+  async function saveInline(){
+    if(!inlineId) return
+    const payload = { id: inlineId, ...inlineData }
+    await upsertUser(payload)
+    setInlineId(null)
+    setInlineData({ name: '', avatar: '' })
+  }
 
-      // UserList component
-      // - Fetches and renders a list of users
-      // - Provides search, add, edit, delete, and inline edit functionality
-      export default function UserList(){
-        const [users, setUsers] = useState([])
-        const [loading, setLoading] = useState(false)
-        const [error, setError] = useState(null)
+  function cancelInline(){
+    setInlineId(null)
+    setInlineData({ name: '', avatar: '' })
+  }
 
-        // Modal edit state
-        const [editing, setEditing] = useState(null)
-        const [showForm, setShowForm] = useState(false)
+  function copyIdToClipboard(id){
+    if(!id) return
+    try{
+      navigator.clipboard?.writeText(String(id))
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(null), 1500)
+    }catch(e){
+      // fallback for older environments
+      try{window.prompt('Copy id (ctrl/cmd+C then Enter):', String(id))}catch(_){/* ignore */}
+    }
+  }
 
-        // Inline (row) edit state
-        const [inlineId, setInlineId] = useState(null)
-        const [inlineData, setInlineData] = useState({ name: '', avatar: '' })
-        const [copiedId, setCopiedId] = useState(null)
+  return (
+    <div className="user-list">
+      <div className="search-centered">
+        <div className="search-wrap">
+          <input
+            className="search-input"
+            placeholder="Search users by name…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            aria-label="Search users by name"
+          />
+          {search && <button className="btn" onClick={() => setSearch('')}>Clear</button>}
+        </div>
+      </div>
 
-        // Search term
-        const [search, setSearch] = useState('')
+      <div className="controls">
+        <button className="btn primary" onClick={handleAdd}>+ Add user</button>
+        <button className="btn" onClick={fetchUsers}>Refresh</button>
+      </div>
 
-        useEffect(() => {
-          fetchUsers()
-        }, [])
+      {loading && <div className="info">Loading users…</div>}
+      {error && <div className="error">{error}</div>}
 
-        // Fetch list of users from API
-        async function fetchUsers(){
-          setLoading(true)
-          setError(null)
-          try{
-            const res = await fetch(API)
-            if(!res.ok) throw new Error('Failed to fetch users')
-            const data = await res.json()
-            setUsers(data)
-          }catch(err){
-            setError(err.message)
-          }finally{
-            setLoading(false)
-          }
-        }
+      {!loading && users.length === 0 && <div className="info">No users found — try adding one.</div>}
+      {!loading && users.length > 0 && filteredUsers.length === 0 && <div className="info">No users match "{search}".</div>}
 
-        // Delete a user
-        async function handleDelete(id){
-          if(!confirm('Delete this user?')) return
-          try{
-            const res = await fetch(`${API}/${id}`, { method: 'DELETE' })
-            if(!res.ok) throw new Error('Delete failed')
-            setUsers(prev => prev.filter(u => u.id !== id))
-          }catch(err){
-            alert('Delete failed: ' + err.message)
-          }
-        }
+      <div className="table-wrap">
+        <table className="users-table" role="grid">
+          <thead>
+            <tr>
+              <th className="col-id">ID</th>
+              <th className="col-avatar">Avatar</th>
+              <th className="col-name">Name</th>
+              <th className="col-created">Created At</th>
+              <th className="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.map((user) => (
+              <tr key={user.id} className="row" tabIndex={0}>
+                <td className="col-id">
+                  <div className="id-badge-wrap">
+                    <span className="id-badge">{user.id}</span>
+                    <button title="Copy ID" className="id-copy-btn" onClick={() => copyIdToClipboard(user.id)}>{copiedId === user.id ? 'Copied' : '📋'}</button>
+                  </div>
+                </td>
+                <td className="col-avatar">
+                  {inlineId === user.id ? (
+                    <input value={inlineData.avatar} onChange={e => setInlineData(prev => ({ ...prev, avatar: e.target.value }))} placeholder="avatar url" />
+                  ) : (
+                    <img className="avatar" src={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`} alt={user.name} />
+                  )}
+                </td>
+                <td className="col-name">
+                  {inlineId === user.id ? (
+                    <input value={inlineData.name} onChange={e => setInlineData(prev => ({ ...prev, name: e.target.value }))} />
+                  ) : (
+                    (user.name || '—')
+                  )}
+                </td>
+                <td className="col-created">{user.createdAt ? new Date(user.createdAt).toLocaleString() : '—'}</td>
+                <td className="col-actions">
+                  <div className="actions">
+                    {inlineId === user.id ? (
+                      <>
+                        <button className="btn" onClick={cancelInline}>Cancel</button>
+                        <button className="btn primary" onClick={saveInline}>Save</button>
+                      </>
+                    ) : (
+                      <>
+                        <button className="btn edit" onClick={() => handleEdit(user)}>Edit</button>
+                        <button className="btn danger" onClick={() => handleDelete(user.id)}>Delete</button>
+                      </>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-        // Open modal with user to edit
-        function handleEdit(user){
-          setEditing(user)
-          setShowForm(true)
-        }
-
-        // Open modal for creating a new user
-        function handleAdd(){
-          setEditing(null)
-          setShowForm(true)
-        }
-
-        // Create or update a user
-        async function upsertUser(payload){
-          try{
-            const method = payload.id ? 'PUT' : 'POST'
-            const path = payload.id ? `${API}/${payload.id}` : API
-            const res = await fetch(path, {
-              method,
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            })
-            if(!res.ok) throw new Error('Save failed')
-            const saved = await res.json()
-            if(method === 'POST') setUsers(prev => [saved, ...prev])
-            else setUsers(prev => prev.map(u => u.id === saved.id ? saved : u))
-            setShowForm(false)
-            setEditing(null)
-          }catch(err){
-            alert('Save failed: ' + err.message)
-          }
-        }
-
-        // Inline save (row editing)
-        async function saveInline(){
-          if(!inlineId) return
-          const payload = { id: inlineId, ...inlineData }
-          await upsertUser(payload)
-          setInlineId(null)
-          setInlineData({ name: '', avatar: '' })
-        }
-
-        function cancelInline(){
-          setInlineId(null)
-          setInlineData({ name: '', avatar: '' })
-        }
-
-        // Copy user id to clipboard with small UI feedback
-        function copyIdToClipboard(id){
-          if(!id) return
-          try{
-            navigator.clipboard?.writeText(String(id))
-            setCopiedId(id)
-            setTimeout(() => setCopiedId(null), 1500)
-          }catch(e){
-            try{window.prompt('Copy id (ctrl/cmd+C then Enter):', String(id))}catch(_){/* ignore */}
-          }
-        }
-
-        // Derived list based on search term
-        const filteredUsers = users.filter(u => {
-          if(!search) return true
-          return (u.name || '').toLowerCase().includes(search.toLowerCase())
-        })
-
-        return (
-          <div className="user-list">
-            <div className="search-centered">
-              <div className="search-wrap">
-                <input
-                  className="search-input"
-                  placeholder="Search users by name…"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  aria-label="Search users by name"
-                />
-                {search && <button className="btn" onClick={() => setSearch('')}>Clear</button>}
-              </div>
-            </div>
-
-            <div className="controls">
-              <button className="btn primary" onClick={handleAdd}>+ Add user</button>
-              <button className="btn" onClick={fetchUsers}>Refresh</button>
-            </div>
-
-            {loading && <div className="info">Loading users…</div>}
-            {error && <div className="error">{error}</div>}
-
-            {!loading && users.length === 0 && <div className="info">No users found — try adding one.</div>}
-            {!loading && users.length > 0 && filteredUsers.length === 0 && <div className="info">No users match "{search}".</div>}
-
-            <div className="table-wrap">
-              <table className="users-table" role="grid">
-                <thead>
-                  <tr>
-                    <th className="col-id">ID</th>
-                    <th className="col-avatar">Avatar</th>
-                    <th className="col-name">Name</th>
-                    <th className="col-created">Created At</th>
-                    <th className="col-actions">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id} className="row" tabIndex={0}>
-                      <td className="col-id">
-                        <div className="id-badge-wrap">
-                          <span className="id-badge">{user.id}</span>
-                          <button title="Copy ID" className="id-copy-btn" onClick={() => copyIdToClipboard(user.id)}>{copiedId === user.id ? 'Copied' : '📋'}</button>
-                        </div>
-                      </td>
-                      <td className="col-avatar">
-                        {inlineId === user.id ? (
-                          <input value={inlineData.avatar} onChange={e => setInlineData(prev => ({ ...prev, avatar: e.target.value }))} placeholder="avatar url" />
-                        ) : (
-                          <img className="avatar" src={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`} alt={user.name} />
-                        )}
-                      </td>
-                      <td className="col-name">
-                        {inlineId === user.id ? (
-                          <input value={inlineData.name} onChange={e => setInlineData(prev => ({ ...prev, name: e.target.value }))} />
-                        ) : (
-                          (user.name || '—')
-                        )}
-                      </td>
-                      <td className="col-created">{user.createdAt ? new Date(user.createdAt).toLocaleString() : '—'}</td>
-                      <td className="col-actions">
-                        <div className="actions">
-                          {inlineId === user.id ? (
-                            <>
-                              <button className="btn" onClick={cancelInline}>Cancel</button>
-                              <button className="btn primary" onClick={saveInline}>Save</button>
-                            </>
-                          ) : (
-                            <>
-                              <button className="btn edit" onClick={() => handleEdit(user)}>Edit</button>
-                              <button className="btn danger" onClick={() => handleDelete(user.id)}>Delete</button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {showForm && (
-              <div className="modal">
-                <div className="modal-inner">
-                  <button className="close" onClick={() => { setShowForm(false); setEditing(null); }}>×</button>
-                  <UserForm user={editing} onCancel={() => { setShowForm(false); setEditing(null); }} onSave={upsertUser} />
-                </div>
-              </div>
-            )}
+      {showForm && (
+        <div className="modal">
+          <div className="modal-inner">
+            <button className="close" onClick={() => { setShowForm(false); setEditing(null); }}>×</button>
+            <UserForm user={editing} onCancel={() => { setShowForm(false); setEditing(null); }} onSave={upsertUser} />
           </div>
-        )
-      }
+        </div>
+      )}
+    </div>
+  )
+}
